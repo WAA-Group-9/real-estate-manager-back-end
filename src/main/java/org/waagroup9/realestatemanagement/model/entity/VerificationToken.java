@@ -15,38 +15,37 @@ import java.util.Date;
 @AllArgsConstructor
 public class VerificationToken {
 
+    //Expiration in minutes
+    private static final int EXPIRATION = 20;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
     private Date expiryDate;
     private String username;
-
-    public VerificationToken(String username,String token) {
-        this.token = token;
-        this.expiryDate = calculateExpirationDate(EXPIRATION);;
-        this.username = username;
-    }
-
-    //Expiration in minutes
-    private static final int EXPIRATION = 20;
-
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_VERIFY_TOKEN"))
     private User user;
 
+    public VerificationToken(String username, String token) {
+        this.token = token;
+        this.expiryDate = calculateExpirationDate(EXPIRATION);
+        ;
+        this.username = username;
+    }
+
     public VerificationToken(User user, String token) {
         super();
-    	this.user = user;
-    	this.token = token;
-        this.expiryDate= calculateExpirationDate(EXPIRATION);
+        this.user = user;
+        this.token = token;
+        this.expiryDate = calculateExpirationDate(EXPIRATION);
 
     }
 
     public VerificationToken(String token) {
         super();
-    	this.token = token;
-        this.expiryDate= calculateExpirationDate(EXPIRATION);
+        this.token = token;
+        this.expiryDate = calculateExpirationDate(EXPIRATION);
 
     }
 

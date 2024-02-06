@@ -3,8 +3,8 @@ package org.waagroup9.realestatemanagement.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -31,18 +31,18 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @PostMapping("/api/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request){
+    @PostMapping
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
         try {
-            User user = userService.registerAdmin(userDTO);
+            User user = userService.registerUser(userDTO);
             eventPublisher.publishEvent(new RegistrationCompleteEvent(user, applicationUrl(request)));
-        }
-        catch (CustomError e){
+        } catch (CustomError e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Successfully Registered, check your email to verify your account", HttpStatus.OK);
     }
+
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -56,13 +56,13 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) throws CustomError {
         userService.deleteUser(id);
-        return new ResponseEntity<>("User deleted successfully",HttpStatus.OK);
+        return new ResponseEntity<>("User deleted successfully", HttpStatus.OK);
     }
 
-    @PatchMapping ("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UserDTO> updateUserDetails(@PathVariable Long id, @RequestBody UserDTO user) {
         try {
-            userService.updateUserDetails(id,user);
+            userService.updateUserDetails(id, user);
             return ResponseEntity.ok(user);
         } catch (CustomError e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -74,7 +74,7 @@ public class UserController {
         VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
         User user = newToken.getUser();
         resendVerificationToken(user, newToken, applicationUrl(request));
-        return  new ResponseEntity<>("Token Re-sent Successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Token Re-sent Successfully", HttpStatus.OK);
     }
 
     @PostMapping("/resetPassword")
@@ -86,8 +86,9 @@ public class UserController {
             userService.createPasswordResetTokenForUser(user, token);
             url = passwordResetTokenMail(user, token, applicationUrl(request));
         }
-        return "Password Reset link: "+url;
+        return "Password Reset link: " + url;
     }
+
     private String passwordResetTokenMail(User user, String token, String appUrl) {
         String url = appUrl + "/savePassword?id=" + user.getId() + "&token=" + token;
         //send password reset Email
@@ -99,16 +100,15 @@ public class UserController {
     public ResponseEntity<?> savePassword(@RequestParam("token") String token, @RequestBody PasswordDTO passwordDTO) {
         String result = userService.validatePasswordResetToken(token);
 
-        if(!result.equals("valid")){
-            return  new ResponseEntity<>("Bad Request", HttpStatus.BAD_REQUEST);
+        if (!result.equals("valid")) {
+            return new ResponseEntity<>("Bad Request", HttpStatus.BAD_REQUEST);
         }
         Optional<User> user = userService.getUserByPasswordToken(token);
-        if(user.isPresent()){
+        if (user.isPresent()) {
             userService.changeUserPassword(user.get(), passwordDTO.getNewPassword());
-            return  new ResponseEntity<>("Password Changed Successfully", HttpStatus.OK);
-        }
-        else {
-            return  new ResponseEntity<>("Invalid Token", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Password Changed Successfully", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Invalid Token", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -123,15 +123,17 @@ public class UserController {
         userService.changeUserPassword(user, passwordDTO.getNewPassword());
         return "password changed successfully";
     }
+
     private void resendVerificationToken(User user, VerificationToken newToken, String appUrl) {
         String url = appUrl + "/registrationConfirm?token=" + newToken.getToken();
         //send verification Email
         log.info("Click the link to verify your account: " + url);
     }
+
     @GetMapping("/verifyRegistration")
     public String verifyRegistration(@RequestParam("token") String token) {
         String result = userService.validateVerificationToken(token);
-        if(result.equalsIgnoreCase("valid")) {
+        if (result.equalsIgnoreCase("valid")) {
             return "User Verified Successfully";
         }
         return "Bad User";

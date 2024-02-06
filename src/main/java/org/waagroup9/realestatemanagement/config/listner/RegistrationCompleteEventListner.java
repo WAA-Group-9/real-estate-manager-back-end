@@ -22,7 +22,7 @@ public class RegistrationCompleteEventListner implements ApplicationListener<Reg
 
         User user = registrationCompleteEvent.getUser();
         String Token = UUID.randomUUID().toString();
-        userService.createVerificationToken(user,Token);
+        userService.createVerificationToken(user, Token);
         //Send the email
 
         String url = registrationCompleteEvent.getAppUrl()

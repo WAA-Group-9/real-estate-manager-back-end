@@ -4,19 +4,18 @@ package org.waagroup9.realestatemanagement.service.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.AuditData;
 import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
-import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.repository.PasswordResetTokenRepository;
 import org.waagroup9.realestatemanagement.repository.UserRepository;
 import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository;
 import org.waagroup9.realestatemanagement.service.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -33,38 +32,43 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Autowired
-    private VerificationTokenRepository verificationTokenRepository;
-
-    @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
-
-
     @Override
-    public User registerAdmin(UserDTO userDTO) throws CustomError {
-        User user = new User();
+    public User registerUser(UserDTO userDTO) throws CustomError {
+        if (emailExists(userDTO.getEmail())) {
+            throw new CustomError("There is an account with the given email address: " + userDTO.getEmail());
+        } else {
+            User user = new User();
 
-        //Add Audit Data
-        AuditData auditData = new AuditData();
-        auditData.setCreatedBy(userDTO.getUserName());
-        auditData.setUpdatedBy(userDTO.getUserName());
-        auditData.setCreatedOn(LocalDateTime.now());
-        auditData.setUpdatedOn(LocalDateTime.now());
+            //Add Audit Data
+            AuditData auditData = new AuditData();
+            auditData.setCreatedBy(userDTO.getUserName());
+            auditData.setUpdatedBy(userDTO.getUserName());
+            auditData.setCreatedOn(LocalDateTime.now());
+            auditData.setUpdatedOn(LocalDateTime.now());
 
-        user.setAuditData(auditData);
-        user.setUserName(userDTO.getUserName());
-        user.setEmail(userDTO.getEmail());
-        user.setUserType(UserType.ADMIN);
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        userRepository.save(user);
+            user.setAuditData(auditData);
+            user.setUserName(userDTO.getUserName());
+            user.setEmail(userDTO.getEmail());
+            user.setUserType(userDTO.getUserType());
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            userRepository.save(user);
+            return user;
+        }
 
-        return user;
+    }
+
+    private boolean emailExists(String email) {
+        return userRepository.findByEmail(email) != null;
     }
 
     @Override
@@ -156,6 +160,8 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long id) throws CustomError {
         return userRepository.findById(id).orElseThrow(() -> new CustomError("User not found"));
     }
+
+    // Existing methods...
 
     @Override
     public void deleteUser(Long id) throws CustomError {

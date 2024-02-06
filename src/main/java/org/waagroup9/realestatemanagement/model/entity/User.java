@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.waagroup9.realestatemanagement.model.AuditData;
-import org.waagroup9.realestatemanagement.model.PhysicalAddress;
 import org.waagroup9.realestatemanagement.model.UserType;
 
 
@@ -35,13 +34,11 @@ public class User {
     private String phoneNumber;
 
     @Embedded
-    private PhysicalAddress physicalAddress;
-
     private AuditData auditData;
 
     @Column(name = "password")
     private String password;
 
-    private boolean active=false;
+    private boolean active = false;
 
 }
