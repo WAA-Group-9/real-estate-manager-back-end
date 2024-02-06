@@ -1,6 +1,5 @@
 package org.waagroup9.realestatemanagement.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
@@ -12,7 +11,7 @@ import java.util.Optional;
 
 @Service
 public interface UserService {
-    User registerAdmin(UserDTO userDTO) throws CustomError;
+    User registerUser(UserDTO userDTO) throws CustomError;
 
     void createVerificationToken(User user, String token);
 
@@ -38,6 +37,7 @@ public interface UserService {
     User getUserById(Long id) throws CustomError;
 
     public void deleteUser(Long id) throws CustomError;
+
 
     User updateUserDetails(Long id, UserDTO user) throws CustomError;
 

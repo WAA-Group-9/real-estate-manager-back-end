@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -31,11 +31,11 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @PostMapping("/api/register")
+    @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request){
 
         try {
-            User user = userService.registerAdmin(userDTO);
+            User user = userService.registerUser(userDTO);
             eventPublisher.publishEvent(new RegistrationCompleteEvent(user, applicationUrl(request)));
         }
         catch (CustomError e){

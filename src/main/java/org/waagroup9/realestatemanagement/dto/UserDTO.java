@@ -12,7 +12,7 @@ import org.waagroup9.realestatemanagement.model.UserType;
 public class UserDTO {
     private Long id;
     private String name;
-    private String UserName;
+    private String userName;
     private String email;
     private String password;
     private UserType userType;

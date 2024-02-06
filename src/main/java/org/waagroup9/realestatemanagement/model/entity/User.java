@@ -35,8 +35,6 @@ public class User {
     private String phoneNumber;
 
     @Embedded
-    private PhysicalAddress physicalAddress;
-
     private AuditData auditData;
 
     @Column(name = "password")
