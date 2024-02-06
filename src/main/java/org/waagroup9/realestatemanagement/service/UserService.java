@@ -35,11 +35,11 @@ public interface UserService {
 
     List<User> getAllUsers();
 
-    User getUserById(int id) throws CustomError;
+    User getUserById(Long id) throws CustomError;
 
-    public void deleteUser(int id) throws CustomError;
+    public void deleteUser(Long id) throws CustomError;
 
-    User updateUserDetails(int id, UserDTO user) throws CustomError;
+    User updateUserDetails(Long id, UserDTO user) throws CustomError;
 
 
 }

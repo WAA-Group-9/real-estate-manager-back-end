@@ -3,14 +3,12 @@ package org.waagroup9.realestatemanagement.service.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.AuditData;
-import org.waagroup9.realestatemanagement.model.PasswordResetToken;
-import org.waagroup9.realestatemanagement.model.PhysicalAddress;
+import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
 import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
@@ -155,12 +153,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(int id) throws CustomError {
+    public User getUserById(Long id) throws CustomError {
         return userRepository.findById(id).orElseThrow(() -> new CustomError("User not found"));
     }
 
     @Override
-    public void deleteUser(int id) throws CustomError {
+    public void deleteUser(Long id) throws CustomError {
         if (userRepository.findById(id).isEmpty()) {
             throw new CustomError("User with ID : " + id + " does not exist");
         } else {
@@ -171,7 +169,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUserDetails(int id, UserDTO updatedUser) throws CustomError {
+    public User updateUserDetails(Long id, UserDTO updatedUser) throws CustomError {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new CustomError("User with ID : " + id + " does not exist"));
 

@@ -1,4 +1,4 @@
-package org.waagroup9.realestatemanagement.model;
+package org.waagroup9.realestatemanagement.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -14,7 +14,7 @@ import java.util.Date;
 public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String token;
     private Date expiryDate;
 

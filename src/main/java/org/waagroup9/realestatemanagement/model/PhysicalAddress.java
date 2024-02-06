@@ -13,4 +13,6 @@ public class PhysicalAddress {
     private String street;    private String city;
     private String zipCode;
     private String country;
+    private double latitude;
+    private double longitude;
 }
