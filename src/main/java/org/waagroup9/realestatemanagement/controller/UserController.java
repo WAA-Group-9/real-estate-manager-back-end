@@ -49,18 +49,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) throws CustomError {
+    public ResponseEntity<User> getUserById(@PathVariable Long id) throws CustomError {
         return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Integer id) throws CustomError {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) throws CustomError {
         userService.deleteUser(id);
         return new ResponseEntity<>("User deleted successfully",HttpStatus.OK);
     }
 
     @PatchMapping ("/{id}")
-    public ResponseEntity<UserDTO> updateUserDetails(@PathVariable int id, @RequestBody UserDTO user) {
+    public ResponseEntity<UserDTO> updateUserDetails(@PathVariable Long id, @RequestBody UserDTO user) {
         try {
             userService.updateUserDetails(id,user);
             return ResponseEntity.ok(user);
