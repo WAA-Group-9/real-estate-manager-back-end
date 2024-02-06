@@ -23,6 +23,7 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Enumerated
     private UserType userType;
 
     private String userName;
