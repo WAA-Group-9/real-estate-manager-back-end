@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AmendmentDTO {
-    private long id;
     private boolean hasSwimmingPool;
     private boolean hasGym;
     private boolean hasParking;

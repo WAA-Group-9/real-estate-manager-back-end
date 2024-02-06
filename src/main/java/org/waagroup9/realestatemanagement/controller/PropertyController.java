@@ -17,15 +17,10 @@ import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.service.PropertyService;
 
 @RestController
-@RequestMapping("/api/v2/property")
+@RequestMapping("/api/v2/properties")
 public class PropertyController {
-
-    private final PropertyService propertyService;
-
     @Autowired
-    public PropertyController(PropertyService propertyService) {
-        this.propertyService = propertyService;
-    }
+    private PropertyService propertyService;
 
     @GetMapping
     public ResponseEntity<List<PropertyDTO>> getAllProperties() {

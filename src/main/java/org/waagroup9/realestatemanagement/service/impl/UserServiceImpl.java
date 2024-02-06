@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.User;
 import org.waagroup9.realestatemanagement.repo.UserRepo;

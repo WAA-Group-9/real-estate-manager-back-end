@@ -1,6 +1,6 @@
 package org.waagroup9.realestatemanagement.dto;
 
-import org.apache.catalina.User;
+import org.waagroup9.realestatemanagement.model.User;
 import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Address;
 import org.waagroup9.realestatemanagement.model.Amandment;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PropertyDTO {
+    private long id;
     private String title;
     private String description;
     private PropertyType propertyType;
@@ -25,5 +26,5 @@ public class PropertyDTO {
     private double lotSize;
     private Amandment amenities;
     private long price;
-    private User owner;
+    private User user;
 }
