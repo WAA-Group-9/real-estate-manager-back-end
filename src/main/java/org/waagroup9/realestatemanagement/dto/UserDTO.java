@@ -18,5 +18,4 @@ public class UserDTO {
     private UserType userType;
 
 
-
 }

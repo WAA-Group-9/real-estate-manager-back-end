@@ -4,19 +4,18 @@ package org.waagroup9.realestatemanagement.service.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.AuditData;
 import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
-import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.repository.PasswordResetTokenRepository;
 import org.waagroup9.realestatemanagement.repository.UserRepository;
 import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository;
 import org.waagroup9.realestatemanagement.service.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -33,18 +32,15 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
-
-    @Autowired
-    private VerificationTokenRepository verificationTokenRepository;
-
-    @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
-
 
     @Override
     public User registerUser(UserDTO userDTO) throws CustomError {
@@ -70,9 +66,11 @@ public class UserServiceImpl implements UserService {
         }
 
     }
+
     private boolean emailExists(String email) {
         return userRepository.findByEmail(email) != null;
     }
+
     @Override
     public void createVerificationToken(User user, String token) {
         VerificationToken verificationToken = new VerificationToken(user, token);

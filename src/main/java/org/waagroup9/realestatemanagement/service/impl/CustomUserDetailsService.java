@@ -1,15 +1,11 @@
 package org.waagroup9.realestatemanagement.service.impl;
 
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.User;
@@ -42,12 +38,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 
-        private Collection<? extends GrantedAuthority> getAuthorities(List<UserType> roles) {
-            List<GrantedAuthority>  authorities = new ArrayList<>();
-            for(UserType role: roles) {
-                authorities.add(new SimpleGrantedAuthority(role.name()));
-            }
-            return authorities;
+    private Collection<? extends GrantedAuthority> getAuthorities(List<UserType> roles) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (UserType role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.name()));
         }
+        return authorities;
+    }
 
 }

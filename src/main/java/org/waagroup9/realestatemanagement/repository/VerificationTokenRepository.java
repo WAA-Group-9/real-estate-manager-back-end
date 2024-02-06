@@ -5,9 +5,10 @@ import org.springframework.stereotype.Repository;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 
 @Repository
-public interface VerificationTokenRepository extends JpaRepository<VerificationToken,Long> {
+public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
 
     VerificationToken findByToken(String token);
+
     VerificationToken findById(long id);
 
 }
