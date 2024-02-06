@@ -1,5 +1,5 @@
 package org.waagroup9.realestatemanagement.model;
 
-public class Property {
-    
+public enum UserType {
+    ADMIN, USER
 }
