@@ -17,10 +17,16 @@ import java.util.Optional;
 public class OfferServiceImpl implements OfferService {
 
     @Autowired
-    private OfferRepository offerRepository;
+    private final OfferRepository offerRepository;
+
 
     @Autowired
-    private OfferAdapter offerAdapter;
+    private final OfferAdapter offerAdapter;
+
+    public OfferServiceImpl(OfferAdapter offerAdapter, OfferRepository offerRepository) {
+        this.offerRepository = offerRepository;
+        this.offerAdapter = offerAdapter;
+    }
 
     @Override
     public void createOffer(OfferDTO offer) {
@@ -45,8 +51,8 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public List<Offer> getAllOffers() {
-        return offerRepository.findAll();
+    public List<OfferDTO> getAllOffers() {
+        return offerRepository.findAll().stream().map(offerAdapter::entityToDto).toList();
     }
 
     @Override

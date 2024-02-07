@@ -19,7 +19,11 @@ import java.util.List;
 @RequestMapping("/api/v1/offers")
 public class OfferController {
     @Autowired
-    private OfferService offerService;
+    private final OfferService offerService;
+
+    public OfferController(OfferService offerService) {
+        this.offerService = offerService;
+    }
 
     @PostMapping
     @CheckOwnerAccess
@@ -49,8 +53,8 @@ public class OfferController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Offer>> getAllOffers() {
-        List<Offer> offers = offerService.getAllOffers();
+    public ResponseEntity<List<OfferDTO>> getAllOffers() {
+        List<OfferDTO> offers = offerService.getAllOffers();
         return new ResponseEntity<>(offers, HttpStatus.OK);
     }
 

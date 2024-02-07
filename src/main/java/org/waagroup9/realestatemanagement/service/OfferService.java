@@ -13,7 +13,7 @@ public interface OfferService {
   void updateOffer(OfferDTO offer);
   void deleteOffer(Offer offer);
   Offer getOfferById(Long id);
-  List<Offer> getAllOffers();
+  List<OfferDTO> getAllOffers();
   void sendOffer(OfferDTO offer);
 
   void respondToOffer(Long id, OfferStatus status);
