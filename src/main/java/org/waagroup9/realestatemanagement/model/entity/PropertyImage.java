@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.waagroup9.realestatemanagement.model.AuditData;
 
 @Entity
 @Data
@@ -18,4 +19,7 @@ public class PropertyImage {
 
     @ManyToOne
     private Property property;
+
+    @Embedded
+    private AuditData auditData = new AuditData();
 }

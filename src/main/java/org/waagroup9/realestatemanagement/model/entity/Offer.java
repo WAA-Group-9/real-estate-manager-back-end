@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.waagroup9.realestatemanagement.model.AuditData;
 import org.waagroup9.realestatemanagement.model.OfferStatus;
 
 import java.util.Date;
@@ -23,10 +24,8 @@ public class Offer {
     private OfferStatus offerStatus;
     private Date offerDate;
     private String description;
-
     @ManyToOne
     private User user;
-
-
-
+    @Embedded
+    private AuditData auditData = new AuditData();
 }

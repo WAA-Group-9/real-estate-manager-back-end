@@ -2,10 +2,7 @@ package org.waagroup9.realestatemanagement.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.waagroup9.realestatemanagement.model.Address;
-import org.waagroup9.realestatemanagement.model.Amenities;
-import org.waagroup9.realestatemanagement.model.PropertyType;
-import org.waagroup9.realestatemanagement.model.PropertyStatus;
+import org.waagroup9.realestatemanagement.model.*;
 
 import java.util.Date;
 import java.util.List;
@@ -52,4 +49,7 @@ public class Property {
 
     @ManyToOne
     private User owner;
+
+    @Embedded
+    private AuditData auditData = new AuditData();
 }
