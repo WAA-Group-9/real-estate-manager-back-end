@@ -1,9 +1,7 @@
 package org.waagroup9.realestatemanagement.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.waagroup9.realestatemanagement.model.Address;
 import org.waagroup9.realestatemanagement.model.Amenities;
 import org.waagroup9.realestatemanagement.model.PropertyType;
@@ -15,7 +13,8 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class Property {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,8 +44,11 @@ public class Property {
 
     private String currency;
 
-    @OneToMany(mappedBy = "property")
+    @OneToMany(mappedBy = "property", cascade = CascadeType.PERSIST)
     private List<PriceHistory> priceHistory;
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.PERSIST)
+    private List<PropertyImage> images;
 
     @ManyToOne
     private User owner;
