@@ -33,7 +33,7 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
         try {
@@ -46,6 +46,7 @@ public class UserController {
     }
 
     @GetMapping
+    @CheckUserAccess
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }

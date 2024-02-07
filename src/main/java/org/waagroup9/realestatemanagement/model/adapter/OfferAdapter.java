@@ -25,15 +25,27 @@ public class OfferAdapter {
     public Offer dtoToEntity(OfferDTO dto) {
         Offer offer = new Offer();
         offer.setId(dto.getId());
-        offer.setPropertyId(Long.parseLong(dto.getPropertyId()));
-        offer.setOfferAmount(Double.parseDouble(dto.getOfferPrice()));
-        offer.setOfferStatus(dto.getOfferStatus());
-        try {
-            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dto.getOfferDate());
-            offer.setOfferDate(date);
-        } catch (ParseException e) {
-            e.printStackTrace();
+
+        if (dto.getPropertyId() != null) {
+            offer.setPropertyId(Long.parseLong(dto.getPropertyId()));
         }
+
+        if (dto.getOfferPrice() != null) {
+            offer.setOfferAmount(Double.parseDouble(dto.getOfferPrice()));
+        }
+
+        offer.setOfferStatus(dto.getOfferStatus());
+
+        // Check if getOfferDate() is not null before parsing
+        if (dto.getOfferDate() != null) {
+            try {
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dto.getOfferDate());
+                offer.setOfferDate(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
         offer.setDescription(dto.getOfferDescription());
 
         User user = userService.findUserByEmail(dto.getEmail());

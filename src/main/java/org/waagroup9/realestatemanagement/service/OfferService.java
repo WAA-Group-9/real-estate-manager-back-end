@@ -17,8 +17,5 @@ public interface OfferService {
   void sendOffer(OfferDTO offer);
 
   void respondToOffer(Long id, OfferStatus status);
-
-  void acceptOffer(Long id);
-    void rejectOffer(Long id);
     void deleteOffer(Long id);
 }

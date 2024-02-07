@@ -40,9 +40,9 @@ public class OfferController {
 
     @DeleteMapping("/{id}")
     @CheckUserAccess
-    public ResponseEntity<Void> deleteOffer(@PathVariable Long id) {
+    public ResponseEntity<String> deleteOffer(@PathVariable Long id) {
         offerService.deleteOffer(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Offer Deleted Successfully",HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{id}")
@@ -71,21 +71,6 @@ public class OfferController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping("/accept/{id}")
-    @CheckUserAccess
-    @CheckOwnerAccess
-    public ResponseEntity<Void> acceptOffer(@PathVariable Long id) {
-        offerService.acceptOffer(id);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PatchMapping("/reject/{id}")
-    @CheckOwnerAccess
-    @CheckUserAccess
-    public ResponseEntity<Void> rejectOffer(@PathVariable Long id) {
-        offerService.rejectOffer(id);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
     @ExceptionHandler({ CustomError.class, UserPrincipalNotFoundException.class })
     public ResponseEntity<String> handleException(Exception e) {
         // Customize your error response here
