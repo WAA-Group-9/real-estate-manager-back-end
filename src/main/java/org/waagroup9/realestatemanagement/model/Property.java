@@ -1,5 +1,6 @@
 package org.waagroup9.realestatemanagement.model;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,8 +34,7 @@ public class Property {
     private PropertyType propertyType;
     @Enumerated(EnumType.STRING)
     private PropertyStatus propertyStatus;
-    @OneToOne
-    @JoinColumn(name = "address_id")
+    @Embedded
     private Address address;
     @ManyToOne
     @JoinColumn(name = "amandment_id")

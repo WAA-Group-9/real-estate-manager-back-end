@@ -2,6 +2,7 @@ package org.waagroup9.realestatemanagement.model;
 
 import java.util.List;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,8 +33,7 @@ public class User {
     private String telephone;
     @Enumerated(EnumType.STRING)
     private UserType userType;
-    @OneToOne
-    @JoinColumn(name = "address_id")
+    @Embedded
     private Address address;
     @OneToMany(mappedBy = "user")
     private List<Property> properties;

@@ -1,10 +1,10 @@
 package org.waagroup9.realestatemanagement.dto;
 
-import org.waagroup9.realestatemanagement.model.User;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Address;
+import org.waagroup9.realestatemanagement.model.Address;
 import org.waagroup9.realestatemanagement.model.Amandment;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
 import org.waagroup9.realestatemanagement.model.PropertyType;
+import org.waagroup9.realestatemanagement.model.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

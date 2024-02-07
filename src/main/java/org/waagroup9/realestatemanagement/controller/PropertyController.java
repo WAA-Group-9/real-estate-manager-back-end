@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
+import org.waagroup9.realestatemanagement.model.PropertyStatus;
+import org.waagroup9.realestatemanagement.model.PropertyType;
 import org.waagroup9.realestatemanagement.service.PropertyService;
 
 @RestController
@@ -22,9 +25,28 @@ public class PropertyController {
     @Autowired
     private PropertyService propertyService;
 
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
     @GetMapping
-    public ResponseEntity<List<PropertyDTO>> getAllProperties() {
-        List<PropertyDTO> properties = propertyService.getAllProperties();
+    public ResponseEntity<List<PropertyDTO>> getAllProperties(
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(value = "minBedrooms", required = false) Integer minBedrooms,
+            @RequestParam(value = "propertyType", required = false) PropertyType propertyType,
+            @RequestParam(value = "propertyStatus", required = false) PropertyStatus propertyStatus) {
+        List<PropertyDTO> properties;
+
+        if (minPrice != null || maxPrice != null || minBedrooms != null || propertyType != null
+                || propertyStatus != null) {
+            properties = propertyService.findPropertiesByCriteria(minPrice, maxPrice, minBedrooms, propertyType,
+                    propertyStatus);
+        } else {
+            properties = propertyService.getAllProperties();
+        }
+
         return new ResponseEntity<>(properties, HttpStatus.OK);
     }
 
@@ -60,11 +82,5 @@ public class PropertyController {
         propertyService.deleteProperty(propertyId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-    // @GetMapping("/{propertyId}/offers")
-    // public ResponseEntity<?> getPropertyOffers(@PathVariable int propertyId) {
-    // List<OfferDTO> offers = propertyService.getPropertyOffers(propertyId);
-    // return new ResponseEntity<>(offers, HttpStatus.OK);
-    // }
 
 }
