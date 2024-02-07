@@ -34,7 +34,6 @@ public class Property {
 
     @Embedded
     private Address address;
-
     private int bedrooms;
     private double totalArea;
     private double lotSize;
@@ -42,10 +41,12 @@ public class Property {
     @Embedded
     private Amenities amenities;
 
-    @ElementCollection
-    private List<Double> price;
+    private double price;
 
     private String currency;
+
+    @OneToMany(mappedBy = "property")
+    private List<PriceHistory> priceHistory;
 
     @ManyToOne
     private User owner;
