@@ -49,6 +49,7 @@ public class UserController {
     }
 
     @GetMapping
+    @CheckUserAccess
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
