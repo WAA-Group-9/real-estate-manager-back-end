@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.config.event.RegistrationCompleteEvent;
+import org.waagroup9.realestatemanagement.dto.MyListDTO;
+import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.PasswordDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
+import org.waagroup9.realestatemanagement.model.entity.MyList;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.service.UserService;
@@ -33,7 +36,7 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
         try {
@@ -149,14 +152,36 @@ public class UserController {
         return "http://" +
                 request.getServerName() +
                 ":" +
-                request.getServerPort() +
+                request.getServerPort() +"/api/v1/user"+
                 request.getContextPath();
     }
     @ExceptionHandler({ CustomError.class, UserPrincipalNotFoundException.class })
     public ResponseEntity<String> handleException(Exception e) {
-        // Customize your error response here
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
 
+
+    //TODO : add to mylist endpoint
+    @PostMapping("{id}/mylist/{propertyId}")
+    public ResponseEntity<?> addToMyList(@PathVariable Long id, @PathVariable Long propertyId) {
+        userService.addPropertyToMyList(id, propertyId);
+        return new ResponseEntity<>("Added to MyList", HttpStatus.OK);
+    }
+
+    @GetMapping("{id}/mylist")
+    @CheckUserAccess
+    public ResponseEntity<List<MyListDTO>> getUserMyList(@PathVariable Long id) {
+        List<MyListDTO> offers = userService.getUserList(id);
+        return ResponseEntity.ok(offers);
+    }
+
+
+
+    @GetMapping("{id}/offers")
+    @CheckUserAccess
+    public ResponseEntity<List<OfferDTO>> getUserOffers(@PathVariable Long id) {
+        List<OfferDTO> offers = userService.getUserOffers(id);
+        return ResponseEntity.ok(offers);
+    }
 
 }

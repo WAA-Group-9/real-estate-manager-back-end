@@ -5,36 +5,39 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.waagroup9.realestatemanagement.adapter.OfferAdapter;
 import org.waagroup9.realestatemanagement.adapter.PropertyAdapter;
 import org.waagroup9.realestatemanagement.config.CustomError;
+import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
 import org.waagroup9.realestatemanagement.model.PropertyType;
+import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.Property;
+import org.waagroup9.realestatemanagement.repository.OfferRepository;
 import org.waagroup9.realestatemanagement.repository.PropertyRepository;
 import org.waagroup9.realestatemanagement.service.PropertyService;
+import org.waagroup9.realestatemanagement.util.UserUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PropertyServiceImpl implements PropertyService {
-    @Autowired
-    private PropertyRepository propertyRepository;
+    private final PropertyRepository propertyRepository;
+    private final ModelMapper modelMapper;
+    private final PropertyAdapter propertyAdapter;
+    private final EntityManager entityManager;
+    private final OfferRepository offerRepository;
+    private final OfferAdapter offerAdapter;
+    private final UserUtil userUtil;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private PropertyAdapter propertyAdapter;
-
-    @Autowired
-    private EntityManager entityManager;
 
     @Override
     public List<PropertyDTO> getAllProperties() {
@@ -46,18 +49,30 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public PropertyDTO getPropertyById(Long propertyId) {
-        Property property = propertyRepository.findById(propertyId).orElseThrow(()->new RuntimeException("cant find property"));
+        Property property = propertyRepository.findById(propertyId).orElseThrow(() -> new RuntimeException("cant find property"));
         return propertyAdapter.entityToDto(property);
     }
 
     @Override
     public PropertyDTO createProperty(PropertyDTO propertyDTO) {
+
+        validateAuthorization(propertyDTO.getOwner());
+
         try {
             Property property = propertyAdapter.dtoToEntity(propertyDTO);
             Property savedProperty = propertyRepository.save(property);
             return propertyAdapter.entityToDto(savedProperty);
         } catch (CustomError e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void validateAuthorization(String email){
+        Boolean userTypePredicate = userUtil.getCurrentUserType() != UserType.OWNER;
+        Boolean emailPredicate = !userUtil.getEmailFromAuthentication().equals(email);
+
+        if(userTypePredicate || emailPredicate){
+            throw new RuntimeException("User not authorized to create properties");
         }
     }
 
@@ -78,8 +93,9 @@ public class PropertyServiceImpl implements PropertyService {
         propertyRepository.deleteById(property.getId());
     }
 
+    @Override
     public List<PropertyDTO> findPropertiesByCriteria(Double minPrice, Double maxPrice, Integer minBedrooms,
-            PropertyType propertyType, PropertyStatus propertyStatus) {
+                                                      PropertyType propertyType, PropertyStatus propertyStatus) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Property> criteriaQuery = criteriaBuilder.createQuery(Property.class);
@@ -114,6 +130,29 @@ public class PropertyServiceImpl implements PropertyService {
         return properties.stream()
                 .map(property -> propertyAdapter.entityToDto(property))
                 .toList();
+    }
+
+    @Override
+    public List<OfferDTO> getPropertyOffers(Long id) {
+        Property property = validatePropertyOwnership(id);
+        return offerRepository.getOfferByProperty_IdOrderByOfferDateDesc(property.getId())
+                .stream()
+                .map(offerAdapter::entityToDto).toList();
+    }
+
+    private Property validatePropertyOwnership(Long id) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        if (userUtil.getCurrentUserType() != UserType.OWNER) {
+            throw new RuntimeException("User not authorized to view offers");
+        }
+        String propertyOwner = property.getOwner().getEmail();
+        if (!propertyOwner.equals(userUtil.getEmailFromAuthentication())) {
+            throw new RuntimeException("User not authorized to view offers");
+        }
+
+        return property;
     }
 
 }

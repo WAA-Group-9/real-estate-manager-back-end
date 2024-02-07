@@ -2,6 +2,8 @@ package org.waagroup9.realestatemanagement.service;
 
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
+import org.waagroup9.realestatemanagement.dto.MyListDTO;
+import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
@@ -41,5 +43,12 @@ public interface UserService {
 
     User updateUserDetails(Long id, UserDTO user) throws CustomError;
 
+    User getUserByEmail(String email);
 
+
+    List<OfferDTO> getUserOffers(Long id);
+
+    List<MyListDTO> getUserList(Long id);
+
+    void addPropertyToMyList(Long id, Long propertyId);
 }

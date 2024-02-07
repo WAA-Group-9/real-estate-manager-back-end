@@ -25,28 +25,30 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "email")
+    @Column(unique = true)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    @Column(unique = true)
     private String userName;
 
+    @Column(unique = true)
     private String phoneNumber;
 
     @Embedded
-    private AuditData auditData;
+    private AuditData auditData = new AuditData();
 
     @Column(name = "password")
     private String password;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Offer> offers = new ArrayList<>();
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Property> properties = new ArrayList<>();
 
-    private boolean active = false;
+    private boolean active;
 
 }

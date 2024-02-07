@@ -48,6 +48,7 @@ public class PropertyAdapter {
     }
 
     public PropertyDTO entityToDto(Property property) {
+        //TODO : refactor
         PropertyDTO propertyDTO = modelMapper.map(property, PropertyDTO.class);
         propertyDTO.setOwner(property.getOwner().getEmail());
         List<PriceHistoryDTO> priceHistoryDTOs = property.getPriceHistory().stream().map(priceHistory -> {

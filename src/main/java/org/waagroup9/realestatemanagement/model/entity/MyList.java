@@ -19,8 +19,13 @@ public class MyList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
+    @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany
+    @ManyToMany
+    @JoinTable(
+        name = "mylist_property",
+        joinColumns = @JoinColumn(name = "mylist_id"),
+        inverseJoinColumns = @JoinColumn(name = "property_id"))
     private List<Property> properties;
     @Embedded
     private AuditData auditData = new AuditData();
