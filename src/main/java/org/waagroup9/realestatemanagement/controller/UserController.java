@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.waagroup9.realestatemanagement.config.CustomError;
+import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.config.event.RegistrationCompleteEvent;
 import org.waagroup9.realestatemanagement.dto.PasswordDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
@@ -16,13 +17,14 @@ import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.service.UserService;
 
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/v1/user")
 public class UserController {
 
     @Autowired
@@ -31,7 +33,7 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
         try {
@@ -49,17 +51,21 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @CheckUserAccess
     public ResponseEntity<User> getUserById(@PathVariable Long id) throws CustomError {
+
         return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
+    @CheckUserAccess
     public ResponseEntity<?> deleteUser(@PathVariable Long id) throws CustomError {
         userService.deleteUser(id);
         return new ResponseEntity<>("User deleted successfully", HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
+    @CheckUserAccess
     public ResponseEntity<UserDTO> updateUserDetails(@PathVariable Long id, @RequestBody UserDTO user) {
         try {
             userService.updateUserDetails(id, user);
@@ -146,5 +152,11 @@ public class UserController {
                 request.getServerPort() +
                 request.getContextPath();
     }
+    @ExceptionHandler({ CustomError.class, UserPrincipalNotFoundException.class })
+    public ResponseEntity<String> handleException(Exception e) {
+        // Customize your error response here
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    }
+
 
 }

@@ -4,7 +4,10 @@ package org.waagroup9.realestatemanagement.service.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
@@ -18,10 +21,7 @@ import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository
 import org.waagroup9.realestatemanagement.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -158,11 +158,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) throws CustomError {
-        return userRepository.findById(id).orElseThrow(() -> new CustomError("User not found"));
+
+        return userRepository.findById(id)
+                .orElseThrow();
+
     }
-
-    // Existing methods...
-
     @Override
     public void deleteUser(Long id) throws CustomError {
         if (userRepository.findById(id).isEmpty()) {
@@ -198,6 +198,16 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new BadCredentialsException("Bad Credentials");
         }
+    }
+
+    private String getEmailFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+            Map<String, Object> attributes = jwtAuthenticationToken.getTokenAttributes();
+            return (String) attributes.get("email");
+        }
+        return null;
     }
 
 }

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.waagroup9.realestatemanagement.model.AuditData;
 import org.waagroup9.realestatemanagement.model.UserType;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private UserType userType;
 
     private String userName;
@@ -38,6 +40,12 @@ public class User {
 
     @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Offer> offers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Property> properties = new ArrayList<>();
 
     private boolean active = false;
 
