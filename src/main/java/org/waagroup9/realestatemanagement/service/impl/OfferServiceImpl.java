@@ -71,24 +71,6 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public void acceptOffer(Long id) {
-        Optional<Offer> offer = offerRepository.findById(id);
-        if (offer.isPresent()) {
-            offer.get().setOfferStatus(OfferStatus.ACCEPTED);
-            offerRepository.save(offer.get());
-        }
-    }
-
-    @Override
-    public void rejectOffer(Long id) {
-        Optional<Offer> offer = offerRepository.findById(id);
-        if (offer.isPresent()) {
-            offer.get().setOfferStatus(OfferStatus.REJECTED);
-            offerRepository.save(offer.get());
-        }
-    }
-
-    @Override
     public void deleteOffer(Long id) {
         offerRepository.deleteById(id);
     }

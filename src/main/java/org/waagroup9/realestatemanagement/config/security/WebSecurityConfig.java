@@ -24,7 +24,7 @@ public class WebSecurityConfig {
 
 
     private static final String[] WHITE_LIST_URLS = {
-            "/api/v1/user/register",
+            "/api/v1/user",
             "/registrationConfirm",
             "/savePassword",
             "/registrationConfirm",
@@ -45,7 +45,7 @@ public class WebSecurityConfig {
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(WHITE_LIST_URLS).permitAll()
-                                .requestMatchers("/api/**").authenticated()
+                                .requestMatchers("/api/v1/user/**").authenticated()
                 )
                 .formLogin(formLogin ->
                         formLogin

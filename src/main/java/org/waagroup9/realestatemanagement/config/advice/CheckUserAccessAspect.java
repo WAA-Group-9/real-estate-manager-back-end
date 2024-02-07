@@ -29,9 +29,15 @@ public class CheckUserAccessAspect {
             Long id = (Long) args[0];
             String email = getEmailFromAuthentication();
             User user = userRepository.findByEmail(email);
-            if (!Objects.equals(user.getId(), id)) {
-                throw new CustomError("Access denied");
+
+            if (user != null) {
+                if (!Objects.equals(user.getId(), id)) {
+                    throw new CustomError("Access denied");
+                }
+            } else {
+                throw new CustomError("User not found");
             }
+
         }
     }
 
