@@ -15,6 +15,7 @@ public class Address {
     private String state;
     private String country;
     private String zipCode;
+    private long latitude;
+    private long longitude;
 
-    // getters and setters
 }

@@ -1,5 +1,6 @@
 package org.waagroup9.realestatemanagement.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/offers")
+@RequiredArgsConstructor
 public class OfferController {
-    @Autowired
     private final OfferService offerService;
-
-    public OfferController(OfferService offerService) {
-        this.offerService = offerService;
-    }
 
     @PostMapping
     @CheckOwnerAccess
@@ -56,12 +53,6 @@ public class OfferController {
     public ResponseEntity<List<OfferDTO>> getAllOffers() {
         List<OfferDTO> offers = offerService.getAllOffers();
         return new ResponseEntity<>(offers, HttpStatus.OK);
-    }
-
-    @PostMapping("/send")
-    public ResponseEntity<OfferDTO> sendOffer(@RequestBody OfferDTO offer) {
-        offerService.sendOffer(offer);
-        return new ResponseEntity<>(offer, HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}")

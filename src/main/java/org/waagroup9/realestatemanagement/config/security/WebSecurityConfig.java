@@ -21,13 +21,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableConfigurationProperties(OAuth2ClientProperties.class)
 
 public class WebSecurityConfig {
-
-
     private static final String[] WHITE_LIST_URLS = {
             "/api/v1/user",
             "/registrationConfirm",
             "/savePassword",
             "/registrationConfirm",
+            "/api/v1/user/verifyRegistration",
             "/savePassword",
             "/login*",
             "/resetPassword*",

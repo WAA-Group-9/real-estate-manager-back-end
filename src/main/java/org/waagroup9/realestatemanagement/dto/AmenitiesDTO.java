@@ -1,15 +1,13 @@
-package org.waagroup9.realestatemanagement.model;
+package org.waagroup9.realestatemanagement.dto;
 
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Amenities {
+@NoArgsConstructor
+public class AmenitiesDTO {
     private boolean hasSwimmingPool;
     private boolean hasGym;
     private boolean hasParking;
