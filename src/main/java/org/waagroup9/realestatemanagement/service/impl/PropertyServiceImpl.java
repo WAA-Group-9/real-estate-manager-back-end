@@ -8,6 +8,8 @@ import jakarta.persistence.criteria.Root;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.waagroup9.realestatemanagement.adapter.PropertyAdapter;
+import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
 import org.waagroup9.realestatemanagement.model.PropertyType;
@@ -29,27 +31,34 @@ public class PropertyServiceImpl implements PropertyService {
     private ModelMapper modelMapper;
 
     @Autowired
+    private PropertyAdapter propertyAdapter;
+
+    @Autowired
     private EntityManager entityManager;
 
     @Override
     public List<PropertyDTO> getAllProperties() {
         List<Property> properties = propertyRepository.findAll();
         return properties.stream()
-                .map(property -> modelMapper.map(property, PropertyDTO.class))
+                .map(property -> propertyAdapter.entityToDto(property))
                 .collect(Collectors.toList());
     }
 
     @Override
     public PropertyDTO getPropertyById(Long propertyId) {
-        Optional<Property> propertyOptional = propertyRepository.findById(propertyId);
-        return propertyOptional.map(property -> modelMapper.map(property, PropertyDTO.class)).orElse(null);
+        Property property = propertyRepository.findById(propertyId).orElseThrow(()->new RuntimeException("cant find property"));
+        return propertyAdapter.entityToDto(property);
     }
 
     @Override
     public PropertyDTO createProperty(PropertyDTO propertyDTO) {
-        Property property = modelMapper.map(propertyDTO, Property.class);
-        Property savedProperty = propertyRepository.save(property);
-        return modelMapper.map(savedProperty, PropertyDTO.class);
+        try {
+            Property property = propertyAdapter.dtoToEntity(propertyDTO);
+            Property savedProperty = propertyRepository.save(property);
+            return propertyAdapter.entityToDto(savedProperty);
+        } catch (CustomError e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -58,7 +67,7 @@ public class PropertyServiceImpl implements PropertyService {
                 .orElseThrow(() -> new RuntimeException("Property not found"));
         modelMapper.map(propertyDTO, property);
         Property updatedProperty = propertyRepository.save(property);
-        return modelMapper.map(updatedProperty, PropertyDTO.class);
+        return propertyAdapter.entityToDto(updatedProperty);
     }
 
 
@@ -102,7 +111,9 @@ public class PropertyServiceImpl implements PropertyService {
 
         List<Property> properties = entityManager.createQuery(criteriaQuery).getResultList();
 
-        return properties.stream().map(property -> modelMapper.map(property, PropertyDTO.class)).collect(Collectors.toList());
+        return properties.stream()
+                .map(property -> propertyAdapter.entityToDto(property))
+                .toList();
     }
 
 }
