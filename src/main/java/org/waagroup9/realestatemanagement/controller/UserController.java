@@ -1,21 +1,22 @@
 package org.waagroup9.realestatemanagement.controller;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.config.event.RegistrationCompleteEvent;
-import org.waagroup9.realestatemanagement.dto.MyListDTO;
-import org.waagroup9.realestatemanagement.dto.OfferDTO;
-import org.waagroup9.realestatemanagement.dto.PasswordDTO;
-import org.waagroup9.realestatemanagement.dto.UserDTO;
-import org.waagroup9.realestatemanagement.model.entity.MyList;
+import org.waagroup9.realestatemanagement.dto.*;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.service.UserService;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/user")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
 
     @Autowired
@@ -35,6 +37,13 @@ public class UserController {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Value("${spring.security.oauth2.client.registration.google.clientId}")
+    private String clientId;
+
+    @Value("${spring.security.oauth2.client.registration.google.clientSecret}")
+    private String clientSecret;
+
 
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
@@ -149,14 +158,64 @@ public class UserController {
         return "Bad User";
     }
 
+    //TODO needs a lot of refactoring
+    @PostMapping("/auth/token")
+    public ResponseEntity<UserTokenResponseDTO> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
+        System.out.println(authorizationCode.getAuthorizationCode());
+        RestTemplate restTemplate = new RestTemplate();
+
+        String redirectUri = "http://localhost:3000";
+        String grantType = "authorization_code";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("code", authorizationCode.getAuthorizationCode());
+        map.add("redirect_uri", redirectUri);
+        map.add("grant_type", grantType);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<TokenResponse> response = restTemplate.exchange("https://oauth2.googleapis.com/token", HttpMethod.POST, request, TokenResponse.class);
+
+        // Extract the ID token and decode it to get the user's email
+        String idToken = response.getBody().getId_token();
+        String email = decodeEmailFromIdToken(idToken);
+        System.out.println(email);
+
+        // Get the user data from the database using the email
+        User user = userService.findUserByEmail(email);
+
+        // Create a UserDTO object from the user data
+        UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getUserName(), user.getEmail(), null, user.getUserType());
+
+        // Create a UserTokenResponseDTO object that contains the UserDTO and TokenResponse
+        UserTokenResponseDTO userTokenResponseDTO = new UserTokenResponseDTO(userDTO, response.getBody());
+
+        return ResponseEntity.ok(userTokenResponseDTO);
+    }
+
+
+    private String decodeEmailFromIdToken(String idToken) {
+        DecodedJWT jwt = JWT.decode(idToken);
+        String email = jwt.getClaim("email").asString();
+
+        return email;
+    }
+
+
     private String applicationUrl(HttpServletRequest request) {
         return "http://" +
                 request.getServerName() +
                 ":" +
-                request.getServerPort() +"/api/v1/user"+
+                request.getServerPort() + "/api/v1/user" +
                 request.getContextPath();
     }
-    @ExceptionHandler({ CustomError.class, UserPrincipalNotFoundException.class })
+
+    @ExceptionHandler({CustomError.class, UserPrincipalNotFoundException.class})
     public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
@@ -177,12 +236,17 @@ public class UserController {
     }
 
 
-
     @GetMapping("{id}/offers")
     @CheckUserAccess
     public ResponseEntity<List<OfferDTO>> getUserOffers(@PathVariable Long id) {
         List<OfferDTO> offers = userService.getUserOffers(id);
         return ResponseEntity.ok(offers);
+    }
+
+    @GetMapping("auth/")
+    public ResponseEntity<?> getAuthenticatedUser() {
+        UserDTO user = userService.getUserByToken();
+        return new ResponseEntity<UserDTO>(user, HttpStatus.OK);
     }
 
 }

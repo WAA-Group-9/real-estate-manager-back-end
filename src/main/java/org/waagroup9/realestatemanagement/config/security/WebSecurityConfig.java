@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -38,13 +39,14 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // Add this line
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.disable())
                 )
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(WHITE_LIST_URLS).permitAll()
-                                .requestMatchers("/api/v1/user/**").authenticated()
+                                .requestMatchers("/api/v1/user/**").permitAll()
                 )
                 .formLogin(formLogin ->
                         formLogin
@@ -54,12 +56,10 @@ public class WebSecurityConfig {
                         oauth2Login
                                 .defaultSuccessUrl("/", true)
                 )
-                .oauth2Client(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2ResourceServer ->
                         oauth2ResourceServer
                                 .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
                 );
-
 
         return http.build();
     }

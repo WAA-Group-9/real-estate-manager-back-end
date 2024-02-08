@@ -2,6 +2,7 @@ package org.waagroup9.realestatemanagement.service.impl;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.MyListDTO;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
-import org.waagroup9.realestatemanagement.model.AuditData;
 import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
 import org.waagroup9.realestatemanagement.model.entity.Property;
 import org.waagroup9.realestatemanagement.model.entity.User;
@@ -21,16 +21,14 @@ import org.waagroup9.realestatemanagement.repository.PasswordResetTokenRepositor
 import org.waagroup9.realestatemanagement.repository.PropertyRepository;
 import org.waagroup9.realestatemanagement.repository.UserRepository;
 import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository;
-import org.waagroup9.realestatemanagement.service.PropertyService;
 import org.waagroup9.realestatemanagement.service.UserService;
+import org.waagroup9.realestatemanagement.util.UserUtil;
 
-import java.time.LocalDateTime;
 import java.util.*;
-
-import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
 
@@ -47,6 +45,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    //private final UserUtil userUtil;
 
     @Autowired
     public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
@@ -233,6 +233,12 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new BadCredentialsException("Bad Credentials");
         }
+    }
+
+    public UserDTO getUserByToken() {
+        //String email = userUtil.getEmailFromAuthentication();
+        User user = userRepository.findUserByEmail("").orElseThrow(() -> new RuntimeException("User not found"));
+        return modelMapper.map(user, UserDTO.class);
     }
 
 
