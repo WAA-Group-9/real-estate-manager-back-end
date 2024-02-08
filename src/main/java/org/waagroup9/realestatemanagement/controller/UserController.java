@@ -1,17 +1,14 @@
 package org.waagroup9.realestatemanagement.controller;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +17,6 @@ import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.config.event.RegistrationCompleteEvent;
 import org.waagroup9.realestatemanagement.dto.*;
-import org.waagroup9.realestatemanagement.model.entity.MyList;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
 import org.waagroup9.realestatemanagement.service.UserService;
@@ -42,11 +38,11 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
+    @Value("${spring.security.oauth2.client.registration.google.clientId}")
+    private String clientId;
 
-    @Autowired
-    private OAuth2ClientProperties oAuth2ClientProperties;
+    @Value("${spring.security.oauth2.client.registration.google.clientSecret}")
+    private String clientSecret;
 
 
     @PostMapping
@@ -162,30 +158,53 @@ public class UserController {
         return "Bad User";
     }
 
-   @PostMapping("/auth/token")
-public ResponseEntity<String> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
-       System.out.println(authorizationCode.getAuthorizationCode());
-    RestTemplate restTemplate = new RestTemplate();
+    //TODO needs a lot of refactoring
+    @PostMapping("/auth/token")
+    public ResponseEntity<UserTokenResponseDTO> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
+        System.out.println(authorizationCode.getAuthorizationCode());
+        RestTemplate restTemplate = new RestTemplate();
 
-    String redirectUri = "http://127.0.0.1:8080/login/oauth2/code/google";
-    String grantType = "authorization_code";
+        String redirectUri = "http://localhost:3000";
+        String grantType = "authorization_code";
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Content-Type", "application/x-www-form-urlencoded");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
 
-    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-    map.add("client_id", "754317980356-5kha3jmphg9tm7oirmn7pac4fbauj85o.apps.googleusercontent.com");
-    map.add("client_secret", "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");
-    map.add("code", authorizationCode.getAuthorizationCode());
-    map.add("redirect_uri", redirectUri);
-    map.add("grant_type", grantType);
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("code", authorizationCode.getAuthorizationCode());
+        map.add("redirect_uri", redirectUri);
+        map.add("grant_type", grantType);
 
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-    ResponseEntity<String> response = restTemplate.exchange("https://oauth2.googleapis.com/token", HttpMethod.POST, request, String.class);
+        ResponseEntity<TokenResponse> response = restTemplate.exchange("https://oauth2.googleapis.com/token", HttpMethod.POST, request, TokenResponse.class);
 
-    return response;
-}
+        // Extract the ID token and decode it to get the user's email
+        String idToken = response.getBody().getId_token();
+        String email = decodeEmailFromIdToken(idToken);
+        System.out.println(email);
+
+        // Get the user data from the database using the email
+        User user = userService.findUserByEmail(email);
+
+        // Create a UserDTO object from the user data
+        UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getUserName(), user.getEmail(), null, user.getUserType());
+
+        // Create a UserTokenResponseDTO object that contains the UserDTO and TokenResponse
+        UserTokenResponseDTO userTokenResponseDTO = new UserTokenResponseDTO(userDTO, response.getBody());
+
+        return ResponseEntity.ok(userTokenResponseDTO);
+    }
+
+
+    private String decodeEmailFromIdToken(String idToken) {
+        DecodedJWT jwt = JWT.decode(idToken);
+        String email = jwt.getClaim("email").asString();
+
+        return email;
+    }
 
 
     private String applicationUrl(HttpServletRequest request) {
