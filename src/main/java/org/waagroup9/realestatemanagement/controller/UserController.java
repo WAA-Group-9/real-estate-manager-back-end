@@ -230,8 +230,8 @@ public class UserController {
 
     @GetMapping("{id}/mylist")
     @CheckUserAccess
-    public ResponseEntity<List<MyListDTO>> getUserMyList(@PathVariable Long id) {
-        List<MyListDTO> offers = userService.getUserList(id);
+    public ResponseEntity<MyListDTO> getUserMyList(@PathVariable Long id) {
+        MyListDTO offers = userService.getUserList(id);
         return ResponseEntity.ok(offers);
     }
 

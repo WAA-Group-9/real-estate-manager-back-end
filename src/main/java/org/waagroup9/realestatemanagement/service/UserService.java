@@ -47,7 +47,7 @@ public interface UserService {
     UserDTO getUserByToken();
     List<OfferDTO> getUserOffers(Long id);
 
-    List<MyListDTO> getUserList(Long id);
+    MyListDTO getUserList(Long id);
 
     void addPropertyToMyList(Long id, Long propertyId);
 }
