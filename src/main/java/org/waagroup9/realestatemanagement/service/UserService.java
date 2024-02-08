@@ -40,12 +40,11 @@ public interface UserService {
 
     public void deleteUser(Long id) throws CustomError;
 
-
     User updateUserDetails(Long id, UserDTO user) throws CustomError;
 
     User getUserByEmail(String email);
 
-
+    UserDTO getUserByToken();
     List<OfferDTO> getUserOffers(Long id);
 
     List<MyListDTO> getUserList(Long id);

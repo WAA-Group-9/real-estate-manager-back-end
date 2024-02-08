@@ -4,17 +4,22 @@ package org.waagroup9.realestatemanagement.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.config.event.RegistrationCompleteEvent;
-import org.waagroup9.realestatemanagement.dto.MyListDTO;
-import org.waagroup9.realestatemanagement.dto.OfferDTO;
-import org.waagroup9.realestatemanagement.dto.PasswordDTO;
-import org.waagroup9.realestatemanagement.dto.UserDTO;
+import org.waagroup9.realestatemanagement.dto.*;
 import org.waagroup9.realestatemanagement.model.entity.MyList;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
@@ -28,6 +33,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/user")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
 
     @Autowired
@@ -35,6 +41,13 @@ public class UserController {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private OAuth2AuthorizedClientService authorizedClientService;
+
+    @Autowired
+    private OAuth2ClientProperties oAuth2ClientProperties;
+
 
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
@@ -149,14 +162,41 @@ public class UserController {
         return "Bad User";
     }
 
+   @PostMapping("/auth/token")
+public ResponseEntity<String> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
+       System.out.println(authorizationCode.getAuthorizationCode());
+    RestTemplate restTemplate = new RestTemplate();
+
+    String redirectUri = "http://127.0.0.1:8080/login/oauth2/code/google";
+    String grantType = "authorization_code";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Type", "application/x-www-form-urlencoded");
+
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    map.add("client_id", "754317980356-5kha3jmphg9tm7oirmn7pac4fbauj85o.apps.googleusercontent.com");
+    map.add("client_secret", "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");
+    map.add("code", authorizationCode.getAuthorizationCode());
+    map.add("redirect_uri", redirectUri);
+    map.add("grant_type", grantType);
+
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+    ResponseEntity<String> response = restTemplate.exchange("https://oauth2.googleapis.com/token", HttpMethod.POST, request, String.class);
+
+    return response;
+}
+
+
     private String applicationUrl(HttpServletRequest request) {
         return "http://" +
                 request.getServerName() +
                 ":" +
-                request.getServerPort() +"/api/v1/user"+
+                request.getServerPort() + "/api/v1/user" +
                 request.getContextPath();
     }
-    @ExceptionHandler({ CustomError.class, UserPrincipalNotFoundException.class })
+
+    @ExceptionHandler({CustomError.class, UserPrincipalNotFoundException.class})
     public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
@@ -177,12 +217,17 @@ public class UserController {
     }
 
 
-
     @GetMapping("{id}/offers")
     @CheckUserAccess
     public ResponseEntity<List<OfferDTO>> getUserOffers(@PathVariable Long id) {
         List<OfferDTO> offers = userService.getUserOffers(id);
         return ResponseEntity.ok(offers);
+    }
+
+    @GetMapping("auth/")
+    public ResponseEntity<?> getAuthenticatedUser() {
+        UserDTO user = userService.getUserByToken();
+        return new ResponseEntity<UserDTO>(user, HttpStatus.OK);
     }
 
 }
