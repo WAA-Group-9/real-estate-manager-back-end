@@ -163,7 +163,6 @@ public class UserController {
     //TODO needs a lot of refactoring
     @PostMapping("/auth/token")
     public ResponseEntity<UserTokenResponseDTO> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
-        System.out.println(authorizationCode.getAuthorizationCode());
         RestTemplate restTemplate = new RestTemplate();
 
         String redirectUri = "http://localhost:3000";
@@ -186,11 +185,9 @@ public class UserController {
         // Extract the ID token and decode it to get the user's email
         String idToken = response.getBody().getId_token();
         String email = decodeEmailFromIdToken(idToken);
-        System.out.println(email);
 
         // Get the user data from the database using the email
         User user = userService.findUserByEmail(email);
-
         // Create a UserDTO object from the user data
         UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getUserName(), user.getEmail(), null, user.getUserType());
 
