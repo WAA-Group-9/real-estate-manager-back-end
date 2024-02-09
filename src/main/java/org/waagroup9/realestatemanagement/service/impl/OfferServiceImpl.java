@@ -1,15 +1,11 @@
 package org.waagroup9.realestatemanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.waagroup9.realestatemanagement.config.CustomError;
-import org.waagroup9.realestatemanagement.dto.OfferDTO;
-import org.waagroup9.realestatemanagement.dto.PropertyDTO;
-import org.waagroup9.realestatemanagement.model.UserType;
-import org.waagroup9.realestatemanagement.model.OfferStatus;
 import org.waagroup9.realestatemanagement.adapter.OfferAdapter;
-import org.waagroup9.realestatemanagement.model.entity.Notification;
+import org.waagroup9.realestatemanagement.dto.OfferDTO;
+import org.waagroup9.realestatemanagement.model.OfferStatus;
+import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.Offer;
 import org.waagroup9.realestatemanagement.model.entity.Property;
 import org.waagroup9.realestatemanagement.model.entity.User;
@@ -20,7 +16,6 @@ import org.waagroup9.realestatemanagement.service.NotificationService;
 import org.waagroup9.realestatemanagement.service.OfferService;
 import org.waagroup9.realestatemanagement.util.UserUtil;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
