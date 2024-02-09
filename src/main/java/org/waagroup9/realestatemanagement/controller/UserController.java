@@ -45,6 +45,8 @@ public class UserController {
     private String clientSecret;
 
 
+
+
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
@@ -230,9 +232,9 @@ public class UserController {
 
     @GetMapping("{id}/mylist")
     @CheckUserAccess
-    public ResponseEntity<MyListDTO> getUserMyList(@PathVariable Long id) {
-        MyListDTO offers = userService.getUserList(id);
-        return ResponseEntity.ok(offers);
+    public ResponseEntity<List<PropertyDTO>> getUserMyList(@PathVariable Long id) {
+        List<PropertyDTO> myFavoriteProperties = userService.getMyFavoriteProperties(id);
+        return ResponseEntity.ok(myFavoriteProperties);
     }
 
 

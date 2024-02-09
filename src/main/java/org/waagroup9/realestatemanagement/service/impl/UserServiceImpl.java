@@ -10,13 +10,18 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
-import org.waagroup9.realestatemanagement.dto.MyListDTO;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
+import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
-import org.waagroup9.realestatemanagement.model.entity.*;
-import org.waagroup9.realestatemanagement.repository.*;
+import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
+import org.waagroup9.realestatemanagement.model.entity.Property;
+import org.waagroup9.realestatemanagement.model.entity.User;
+import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
+import org.waagroup9.realestatemanagement.repository.PasswordResetTokenRepository;
+import org.waagroup9.realestatemanagement.repository.PropertyRepository;
+import org.waagroup9.realestatemanagement.repository.UserRepository;
+import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository;
 import org.waagroup9.realestatemanagement.service.UserService;
-import org.waagroup9.realestatemanagement.util.UserUtil;
 
 import java.util.*;
 
@@ -36,9 +41,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ModelMapper modelMapper;
-
-    @Autowired
-    private MyListRepository myListRepository;
 
     @Autowired
     private PropertyRepository propertyRepository;
@@ -159,10 +161,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) throws CustomError {
+        return userRepository.findById(id).orElseThrow();
+    }
 
-        return userRepository.findById(id)
-                .orElseThrow();
-
+    @Override
+    public List<PropertyDTO> getMyFavoriteProperties(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getFavoriteProperties().stream().map(property -> {
+                    PropertyDTO propertyDTO = modelMapper.map(property, PropertyDTO.class);
+                    propertyDTO.setOwner(property.getOwner().getEmail());
+                    return propertyDTO;
+                }
+        ).toList();
     }
 
     @Override
@@ -207,21 +217,14 @@ public class UserServiceImpl implements UserService {
         return new ArrayList();
     }
 
-    @Override
-    public MyListDTO getUserList(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
-        MyList myList = myListRepository.findByUser(user);
-        return modelMapper.map(myList, MyListDTO.class);
-    }
 
     @Override
-    public void addPropertyToMyList(Long id, Long propertyId) {
+    public PropertyDTO addPropertyToMyList(Long id, Long propertyId) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         Property property = propertyRepository.findById(propertyId).orElseThrow(()-> new RuntimeException("Property not found"));
-        MyList myList = new MyList();
-        myList.setUser(user);
-        myList.getProperties().add(property);
-        myListRepository.save(myList);
+        user.getFavoriteProperties().add(property);
+        userRepository.save(user);
+        return modelMapper.map(property, PropertyDTO.class);
     }
 
     private String applicationUrl(HttpServletRequest request) {

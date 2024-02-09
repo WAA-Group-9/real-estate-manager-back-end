@@ -46,6 +46,13 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Offer> offers = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_favorite_properties",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "property_id"))
+    private List<Property> favoriteProperties = new ArrayList<>();
+
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Property> properties = new ArrayList<>();
 
