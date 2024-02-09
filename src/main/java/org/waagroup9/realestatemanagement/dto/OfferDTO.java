@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OfferDTO {
+    private Long id;
     private String email;
     private Long propertyId;
     private Double offerAmount;

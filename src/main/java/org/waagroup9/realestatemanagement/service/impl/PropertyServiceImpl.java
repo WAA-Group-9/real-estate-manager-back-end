@@ -67,13 +67,19 @@ public class PropertyServiceImpl implements PropertyService {
         }
     }
 
-    public void validateAuthorization(String email){
-        Boolean userTypePredicate = userUtil.getCurrentUserType() != UserType.OWNER;
-        Boolean emailPredicate = !userUtil.getEmailFromAuthentication().equals(email);
+    public void validateAuthorization(String email) {
+        UserType currentUserType = userUtil.getCurrentUserType();
+        String currentUserEmail = userUtil.getEmailFromAuthentication();
 
-        if(userTypePredicate || emailPredicate){
-            throw new RuntimeException("User not authorized to create properties");
+        if (currentUserType == UserType.ADMIN) {
+            return;
         }
+
+        if (currentUserType == UserType.OWNER && currentUserEmail.equals(email)) {
+            return;
+        }
+
+        throw new RuntimeException("User not authorized to create properties");
     }
 
     @Override
@@ -144,15 +150,18 @@ public class PropertyServiceImpl implements PropertyService {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        if (userUtil.getCurrentUserType() != UserType.OWNER) {
-            throw new RuntimeException("User not authorized to view offers");
-        }
-        String propertyOwner = property.getOwner().getEmail();
-        if (!propertyOwner.equals(userUtil.getEmailFromAuthentication())) {
-            throw new RuntimeException("User not authorized to view offers");
+        if (userUtil.getCurrentUserType() == UserType.ADMIN) {
+            return property;
         }
 
-        return property;
+        if (userUtil.getCurrentUserType() == UserType.OWNER) {
+            String propertyOwner = property.getOwner().getEmail();
+            if (propertyOwner.equals(userUtil.getEmailFromAuthentication())) {
+                return property;
+            }
+        }
+
+        throw new RuntimeException("User not authorized to view offers");
     }
 
 }

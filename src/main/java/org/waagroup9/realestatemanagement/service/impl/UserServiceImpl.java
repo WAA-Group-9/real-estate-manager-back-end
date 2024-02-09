@@ -7,12 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
+import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
 import org.waagroup9.realestatemanagement.model.entity.Property;
 import org.waagroup9.realestatemanagement.model.entity.User;
@@ -155,8 +159,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        if(getCurrentUserType() != UserType.ADMIN){
+            throw new RuntimeException("You are not authorized to perform this action");
+        }
+        return userRepository.findAll().stream().map(user -> modelMapper.map(user, UserDTO.class)).toList();
     }
 
     @Override
@@ -245,5 +252,16 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(user, UserDTO.class);
     }
 
-
+    public UserType getCurrentUserType(){
+        return userRepository.findUserByEmail(getEmailFromAuthentication()).orElseThrow(()->new RuntimeException("User Not Found")).getUserType();
+    }
+    public String getEmailFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+            Map<String, Object> attributes = jwtAuthenticationToken.getTokenAttributes();
+            return (String) attributes.get("email");
+        }
+        return null;
+    }
 }

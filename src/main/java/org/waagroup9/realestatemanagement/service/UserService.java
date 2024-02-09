@@ -34,7 +34,7 @@ public interface UserService {
 
     boolean checkIfValidOldPassword(User user, String oldPassword);
 
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
     User getUserById(Long id) throws CustomError;
 
