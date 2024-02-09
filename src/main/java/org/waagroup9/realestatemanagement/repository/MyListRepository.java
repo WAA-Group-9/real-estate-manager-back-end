@@ -7,6 +7,5 @@ import org.waagroup9.realestatemanagement.model.entity.User;
 import java.util.List;
 
 public interface MyListRepository extends JpaRepository<MyList, Long> {
-
-    MyList findMyListById(User user);
+    MyList findByUser(User user);
 }

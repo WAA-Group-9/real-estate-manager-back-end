@@ -210,7 +210,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public MyListDTO getUserList(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
-        MyList myList = myListRepository.findMyListById(user);
+        MyList myList = myListRepository.findByUser(user);
         return modelMapper.map(myList, MyListDTO.class);
     }
 
