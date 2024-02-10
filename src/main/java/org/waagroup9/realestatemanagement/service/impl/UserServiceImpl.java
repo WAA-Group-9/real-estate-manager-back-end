@@ -167,8 +167,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long id) throws CustomError {
-        return userRepository.findById(id).orElseThrow();
+    public UserDTO getUserById(Long id) throws CustomError {
+        User user = userRepository.findById(id).orElseThrow(() -> new CustomError("User with ID : " + id + " does not exist"));
+        return modelMapper.map(user, UserDTO.class);
     }
 
     @Override

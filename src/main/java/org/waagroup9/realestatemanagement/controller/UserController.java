@@ -66,7 +66,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @CheckUserAccess
-    public ResponseEntity<User> getUserById(@PathVariable Long id) throws CustomError {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) throws CustomError {
         return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
