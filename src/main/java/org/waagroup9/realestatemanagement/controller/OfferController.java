@@ -16,6 +16,7 @@ import org.waagroup9.realestatemanagement.service.OfferService;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/v1/offers")
 @RequiredArgsConstructor
@@ -40,6 +41,18 @@ public class OfferController {
     public ResponseEntity<String> deleteOffer(@PathVariable Long id) {
         offerService.deleteOffer(id);
         return new ResponseEntity<>("Offer Deleted Successfully",HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{id}/accept")
+    public ResponseEntity<String> acceptOffer(@PathVariable Long id) {
+        offerService.acceptOffer(id);
+        return new ResponseEntity<String>("Accepted",HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/reject")
+    public ResponseEntity<String> rejectOffer(@PathVariable Long id) {
+        offerService.rejectOffer(id);
+        return new ResponseEntity<String>("Rejected",HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

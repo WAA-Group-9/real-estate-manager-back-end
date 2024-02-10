@@ -7,12 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
-import org.waagroup9.realestatemanagement.dto.MyListDTO;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
+import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
+import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.PasswordResetToken;
 import org.waagroup9.realestatemanagement.model.entity.Property;
 import org.waagroup9.realestatemanagement.model.entity.User;
@@ -22,7 +26,6 @@ import org.waagroup9.realestatemanagement.repository.PropertyRepository;
 import org.waagroup9.realestatemanagement.repository.UserRepository;
 import org.waagroup9.realestatemanagement.repository.VerificationTokenRepository;
 import org.waagroup9.realestatemanagement.service.UserService;
-import org.waagroup9.realestatemanagement.util.UserUtil;
 
 import java.util.*;
 
@@ -156,16 +159,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        if(getCurrentUserType() != UserType.ADMIN){
+            throw new RuntimeException("You are not authorized to perform this action");
+        }
+        return userRepository.findAll().stream().map(user -> modelMapper.map(user, UserDTO.class)).toList();
     }
 
     @Override
-    public User getUserById(Long id) throws CustomError {
+    public UserDTO getUserById(Long id) throws CustomError {
+        User user = userRepository.findById(id).orElseThrow(() -> new CustomError("User with ID : " + id + " does not exist"));
+        return modelMapper.map(user, UserDTO.class);
+    }
 
-        return userRepository.findById(id)
-                .orElseThrow();
-
+    @Override
+    public List<PropertyDTO> getMyFavoriteProperties(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getFavoriteProperties().stream().map(property -> {
+                    PropertyDTO propertyDTO = modelMapper.map(property, PropertyDTO.class);
+                    propertyDTO.setOwner(property.getOwner().getEmail());
+                    return propertyDTO;
+                }
+        ).toList();
     }
 
     @Override
@@ -210,17 +225,14 @@ public class UserServiceImpl implements UserService {
         return new ArrayList();
     }
 
-    @Override
-    public List<MyListDTO> getUserList(Long id) {
-        return null;
-    }
 
     @Override
-    public void addPropertyToMyList(Long id, Long propertyId) {
+    public PropertyDTO addPropertyToMyList(Long id, Long propertyId) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         Property property = propertyRepository.findById(propertyId).orElseThrow(()-> new RuntimeException("Property not found"));
-        user.getProperties().add(property);
+        user.getFavoriteProperties().add(property);
         userRepository.save(user);
+        return modelMapper.map(property, PropertyDTO.class);
     }
 
     private String applicationUrl(HttpServletRequest request) {
@@ -241,5 +253,16 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(user, UserDTO.class);
     }
 
-
+    public UserType getCurrentUserType(){
+        return userRepository.findUserByEmail(getEmailFromAuthentication()).orElseThrow(()->new RuntimeException("User Not Found")).getUserType();
+    }
+    public String getEmailFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+            Map<String, Object> attributes = jwtAuthenticationToken.getTokenAttributes();
+            return (String) attributes.get("email");
+        }
+        return null;
+    }
 }

@@ -2,8 +2,8 @@ package org.waagroup9.realestatemanagement.service;
 
 import org.springframework.stereotype.Service;
 import org.waagroup9.realestatemanagement.config.CustomError;
-import org.waagroup9.realestatemanagement.dto.MyListDTO;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
+import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.dto.UserDTO;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.model.entity.VerificationToken;
@@ -34,9 +34,9 @@ public interface UserService {
 
     boolean checkIfValidOldPassword(User user, String oldPassword);
 
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
-    User getUserById(Long id) throws CustomError;
+    UserDTO getUserById(Long id) throws CustomError;
 
     public void deleteUser(Long id) throws CustomError;
 
@@ -47,7 +47,7 @@ public interface UserService {
     UserDTO getUserByToken();
     List<OfferDTO> getUserOffers(Long id);
 
-    List<MyListDTO> getUserList(Long id);
+    List<PropertyDTO> getMyFavoriteProperties(Long id);
 
-    void addPropertyToMyList(Long id, Long propertyId);
+    PropertyDTO addPropertyToMyList(Long id, Long propertyId);
 }

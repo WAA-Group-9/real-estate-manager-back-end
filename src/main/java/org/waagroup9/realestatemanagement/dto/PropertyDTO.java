@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PropertyDTO {
+    private String id;
     private String title;
     private String description;
     private String propertyType;

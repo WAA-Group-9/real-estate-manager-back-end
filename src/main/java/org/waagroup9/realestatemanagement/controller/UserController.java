@@ -45,6 +45,8 @@ public class UserController {
     private String clientSecret;
 
 
+
+
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
 
@@ -58,15 +60,13 @@ public class UserController {
     }
 
     @GetMapping
-    @CheckUserAccess
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
     @CheckUserAccess
-    public ResponseEntity<User> getUserById(@PathVariable Long id) throws CustomError {
-
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) throws CustomError {
         return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
@@ -161,7 +161,6 @@ public class UserController {
     //TODO needs a lot of refactoring
     @PostMapping("/auth/token")
     public ResponseEntity<UserTokenResponseDTO> exchangeAuthorizationCodeForToken(@RequestBody AuthorizationCode authorizationCode) {
-        System.out.println(authorizationCode.getAuthorizationCode());
         RestTemplate restTemplate = new RestTemplate();
 
         String redirectUri = "http://localhost:3000";
@@ -184,11 +183,9 @@ public class UserController {
         // Extract the ID token and decode it to get the user's email
         String idToken = response.getBody().getId_token();
         String email = decodeEmailFromIdToken(idToken);
-        System.out.println(email);
 
         // Get the user data from the database using the email
         User user = userService.findUserByEmail(email);
-
         // Create a UserDTO object from the user data
         UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getUserName(), user.getEmail(), null, user.getUserType());
 
@@ -230,9 +227,9 @@ public class UserController {
 
     @GetMapping("{id}/mylist")
     @CheckUserAccess
-    public ResponseEntity<List<MyListDTO>> getUserMyList(@PathVariable Long id) {
-        List<MyListDTO> offers = userService.getUserList(id);
-        return ResponseEntity.ok(offers);
+    public ResponseEntity<List<PropertyDTO>> getUserMyList(@PathVariable Long id) {
+        List<PropertyDTO> myFavoriteProperties = userService.getMyFavoriteProperties(id);
+        return ResponseEntity.ok(myFavoriteProperties);
     }
 
 

@@ -1,20 +1,18 @@
 package org.waagroup9.realestatemanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.waagroup9.realestatemanagement.config.CustomError;
-import org.waagroup9.realestatemanagement.dto.OfferDTO;
-import org.waagroup9.realestatemanagement.dto.PropertyDTO;
-import org.waagroup9.realestatemanagement.model.UserType;
-import org.waagroup9.realestatemanagement.model.OfferStatus;
 import org.waagroup9.realestatemanagement.adapter.OfferAdapter;
+import org.waagroup9.realestatemanagement.dto.OfferDTO;
+import org.waagroup9.realestatemanagement.model.OfferStatus;
+import org.waagroup9.realestatemanagement.model.UserType;
 import org.waagroup9.realestatemanagement.model.entity.Offer;
 import org.waagroup9.realestatemanagement.model.entity.Property;
 import org.waagroup9.realestatemanagement.model.entity.User;
 import org.waagroup9.realestatemanagement.repository.OfferRepository;
 import org.waagroup9.realestatemanagement.repository.PropertyRepository;
 import org.waagroup9.realestatemanagement.repository.UserRepository;
+import org.waagroup9.realestatemanagement.service.NotificationService;
 import org.waagroup9.realestatemanagement.service.OfferService;
 import org.waagroup9.realestatemanagement.util.UserUtil;
 
@@ -30,6 +28,7 @@ public class OfferServiceImpl implements OfferService {
     private final PropertyRepository propertyRepository;
     private final UserRepository userRepository;
     private final UserUtil userUtil;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -48,9 +47,8 @@ public class OfferServiceImpl implements OfferService {
         Offer offer = offerAdapter.dtoToEntity(offerDTO);
         offer.setProperty(property);
         offer.setUser(user);
-        offer.setId(null);
-
         Offer savedOffer = offerRepository.save(offer);
+        notificationService.createNotification("Offer received for property" + offer.getProperty().getTitle(), offer.getUser().getId());
         return offerAdapter.entityToDto(savedOffer);
     }
 
@@ -83,11 +81,8 @@ public class OfferServiceImpl implements OfferService {
     @Override
     public void acceptOffer(Long id) {
         Offer offer = validateOfferOwnership(id);
-
-        // If the user is authorized, accept the offer
         offer.setOfferStatus(OfferStatus.ACCEPTED);
 
-        // TODO : notify the buyer
         offerRepository.save(offer);
     }
 
@@ -97,6 +92,7 @@ public class OfferServiceImpl implements OfferService {
 
         // If the user is authorized, reject the offer
         offer.setOfferStatus(OfferStatus.REJECTED);
+        notificationService.createNotification("Offer rejected", offer.getUser().getId());
         offerRepository.save(offer);
     }
 
@@ -129,7 +125,23 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public void deleteOffer(Long id) {
-        // TODO : check if user is owner or (check if the customer who created the offer and if offer is not contingent)
-        offerRepository.deleteById(id);
+        UserType currentUserType = userUtil.getCurrentUserType();
+        String currentUserEmail = userUtil.getEmailFromAuthentication();
+
+        Optional<Offer> optionalOffer = offerRepository.findById(id);
+        if (optionalOffer.isEmpty()) {
+            throw new RuntimeException("Offer not found");
+        }
+
+        Offer offer = optionalOffer.get();
+        String ownerEmail = offer.getProperty().getOwner().getEmail();
+        String offerCreatorEmail = offer.getUser().getEmail();
+
+        if ((currentUserType == UserType.OWNER && ownerEmail.equals(currentUserEmail)) ||
+                (offerCreatorEmail.equals(currentUserEmail) && offer.getOfferStatus() != OfferStatus.CONTINGENT)) {
+            offerRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("User not authorized to delete offer");
+        }
     }
 }
