@@ -6,13 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.waagroup9.realestatemanagement.config.advice.annotations.CheckOwnerAccess;
-import org.waagroup9.realestatemanagement.config.advice.annotations.CheckUserAccess;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
 import org.waagroup9.realestatemanagement.model.PropertyType;
-import org.waagroup9.realestatemanagement.model.entity.Offer;
 import org.waagroup9.realestatemanagement.service.OfferService;
 import org.waagroup9.realestatemanagement.service.PropertyService;
 

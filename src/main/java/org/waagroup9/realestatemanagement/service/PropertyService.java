@@ -2,7 +2,6 @@ package org.waagroup9.realestatemanagement.service;
 
 import java.util.List;
 
-import org.waagroup9.realestatemanagement.config.CustomError;
 import org.waagroup9.realestatemanagement.dto.OfferDTO;
 import org.waagroup9.realestatemanagement.dto.PropertyDTO;
 import org.waagroup9.realestatemanagement.model.PropertyStatus;
